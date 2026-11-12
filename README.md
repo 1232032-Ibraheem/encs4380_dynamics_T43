@@ -5,7 +5,7 @@ Instructor: Dr. Wasel Ghanem
 
 **Submitted by:** Ibraheem Mhanna (1232032) — individual submission, all four modules.
 
-**Live site:** *GitHub Pages link to be added after deployment.*
+**Live site:** https://1232032-ibraheem.github.io/encs4380_dynamics_T43/
 
 An interactive website that shows the dynamic characteristics of first- and second-order sensors. All graphs are computed in the browser and update as the sliders move.
 
