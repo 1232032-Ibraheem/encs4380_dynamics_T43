@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamic Characteristics Toolkit — ENCS4380 HW1</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <h1>Dynamic Characteristics Toolkit</h1>
+    <p>ENCS4380 Interfacing Techniques · Homework 1 · Birzeit University · Ibraheem Mhanna (1232032)</p>
+    <nav class="nav" aria-label="Modules">
+      <a href="#overview">Home</a>
+      <a href="#m1">1. First-order time</a>
+      <a href="#m2">2. First-order frequency</a>
+      <a href="#m3">3. Second-order</a>
+      <a href="#m4">4. Guess the sensor</a>
+      <a href="#validation">Validation</a>
+      <a href="#bonus">Bonus</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============================ HOME ============================ -->
+  <section class="module" id="overview" aria-labelledby="ov-title">
+    <h2 id="ov-title">Overview</h2>
+    <p>A sensor does not report the present value instantly: its output follows the input with a delay set by its dynamics. This toolkit shows how the time constant τ, the damping ratio ζ and the natural frequency ω<sub>n</sub> shape a sensor's response. Every graph is computed live in the browser.</p>
+    <div class="panel">
+      <h3>Modules</h3>
+      <ol>
+        <li><a href="#m1">First-order time response</a>: step and ramp inputs, the 63.2 % and 95 % points, ramp lag, log error plot.</li>
+        <li><a href="#m2">First-order frequency response</a>: input and output sines, amplitude ratio, phase lag, Bode plot, dynamic error.</li>
+        <li><a href="#m3">Second-order response</a>: three damping cases, rise/peak/settling time and overshoot, poles, state-space model.</li>
+        <li><a href="#m4">Guess the sensor</a>: estimate the parameters of a hidden random sensor from a noisy curve.</li>
+      </ol>
+      <p class="muted small">Also: the six <a href="#validation">validation checks</a> from the homework sheet, and a <a href="#bonus">bonus</a> page comparing Euler and RK4 with the exact solution.</p>
+    </div>
+    <div class="panel">
+      <h3>How to use</h3>
+      <ul>
+        <li>Move a slider or type a value in the box next to it. The plots update immediately.</li>
+        <li>Each module has a <em>Predict, then check</em> question: answer it first, then check and apply it to the plot.</li>
+        <li>Hover over a curve to read values. Drag on a plot to zoom; double-click to reset.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================ MODULE 1 ============================ -->
+  <section class="module" id="m1" aria-labelledby="m1-title">
+    <h2 id="m1-title">Module 1: First-order time response</h2>
+    <p>A first-order sensor (for example a thermometer) follows the input exponentially. After one time constant τ it reaches 63.2 % of a step, after 3τ about 95 %. A ramp is followed with a constant delay of τ.</p>
+    <div class="model">
+      <div>\[ \tau\,\dot y + y = K\,x(t) \] \[ G(s)=\frac{K}{\tau s+1} \]</div>
+      <div>\[ \text{step: } y=KA\left(1-e^{-t/\tau}\right) \] \[ \text{ramp: } y=KR\left[t-\tau\left(1-e^{-t/\tau}\right)\right] \]</div>
+    </div>
+    <div class="workbench">
+      <div class="controls panel" id="m1-controls" aria-label="Module 1 parameters"></div>
+      <div class="plots">
+        <div class="plot-card">
+          <h3 id="m1-resp-title">Step response</h3>
+          <p class="cap" id="m1-resp-cap"></p>
+          <div class="plot tall" id="m1-resp" role="img" aria-label="Time response plot"></div>
+        </div>
+        <div class="plot-card">
+          <h3>Error fraction (log axis)</h3>
+          <p class="cap" id="m1-err-cap"></p>
+          <div class="plot" id="m1-err" role="img" aria-label="Error fraction plot with logarithmic axis"></div>
+        </div>
+        <div class="readouts" id="m1-readouts" aria-live="polite"></div>
+        <div id="m1-predict"></div>
+      </div>
+    </div>
+    <div class="interpret"><h3>Interpretation</h3><ul id="m1-interpret"></ul></div>
+  </section>
+
+  <!-- ============================ MODULE 2 ============================ -->
+  <section class="module" id="m2" aria-labelledby="m2-title">
+    <h2 id="m2-title">Module 2: First-order frequency response</h2>
+    <p>With a sine input, the output (after the start-up transient) is a sine of the same frequency, smaller and delayed. Both effects depend only on ωτ. The cutoff frequency is ω = 1/τ.</p>
+    <div class="model">
+      <div>\[ x=A\sin\omega t \;\Rightarrow\; y_{ss}=KA\,M\sin(\omega t+\varphi) \]</div>
+      <div>\[ M=\frac{1}{\sqrt{1+(\omega\tau)^2}} \] \[ \varphi=-\tan^{-1}(\omega\tau) \] \[ \delta=M-1 \] \[ \omega=2\pi f \]</div>
+    </div>
+    <div class="workbench">
+      <div class="controls panel" id="m2-controls" aria-label="Module 2 parameters"></div>
+      <div class="plots">
+        <div class="plot-card">
+          <h3>Input and output</h3>
+          <p class="cap">Dashed: input x(t)/A. Solid: output y(t)/(KA), steady state. The amber bar is the time lag Δt = |φ|/ω.</p>
+          <div class="plot tall" id="m2-time" role="img" aria-label="Input and output sine waves"></div>
+        </div>
+        <div class="plot-grid">
+          <div class="plot-card">
+            <h3>Bode magnitude</h3>
+            <div class="plot" id="m2-bode-mag" role="img" aria-label="Bode magnitude plot"></div>
+          </div>
+          <div class="plot-card">
+            <h3>Bode phase</h3>
+            <div class="plot" id="m2-bode-ph" role="img" aria-label="Bode phase plot"></div>
+          </div>
+        </div>
+        <div class="readouts" id="m2-readouts" aria-live="polite"></div>
+        <div class="panel" id="m2-calc">
+          <h3>Dynamic-error calculator</h3>
+          <div class="two-col">
+            <div>
+              <h4>A. Error at a given frequency</h4>
+              <div class="fields">
+                <label class="field">Time constant τ (s)<input id="c-tau" type="number" step="any" min="0" value="0.2"></label>
+                <label class="field">Frequency f (Hz)<input id="c-f" type="number" step="any" min="0" value="0.31831"></label>
+              </div>
+              <div class="readouts" id="c-out-a" style="margin-top:10px"></div>
+            </div>
+            <div>
+              <h4>B. Largest allowed τ</h4>
+              <div class="fields">
+                <label class="field">Max. error |δ| (%)<input id="c-dmax" type="number" step="any" min="0" max="99" value="5"></label>
+                <label class="field">Max. signal frequency (Hz)<input id="c-fmax" type="number" step="any" min="0" value="100"></label>
+                <label class="field">Phase lag at (Hz)<input id="c-fph" type="number" step="any" min="0" value="50"></label>
+              </div>
+              <div class="readouts" id="c-out-b" style="margin-top:10px"></div>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:10px"><button type="button" class="btn small ghost" id="c-load3">Load validation test 3</button></div>
+        </div>
+        <div id="m2-predict"></div>
+      </div>
+    </div>
+    <div class="interpret"><h3>Interpretation</h3><ul id="m2-interpret"></ul></div>
+  </section>
+
+  <!-- ============================ MODULE 3 ============================ -->
+  <section class="module" id="m3" aria-labelledby="m3-title">
+    <h2 id="m3-title">Module 3: Second-order response</h2>
+    <p>A second-order sensor (accelerometer, mass on a spring) has a mass, a spring and a damper. The damping ratio ζ sets the shape of the step response: oscillating (ζ &lt; 1), fastest without overshoot (ζ = 1) or slow (ζ &gt; 1). The natural frequency ω<sub>n</sub> sets the speed.</p>
+    <div class="model">
+      <div>\[ G(s)=\frac{K\omega_n^2}{s^2+2\zeta\omega_n s+\omega_n^2} \] \[ s_{1,2}=-\zeta\omega_n\pm\omega_n\sqrt{\zeta^2-1} \]</div>
+      <div>\[ m\ddot x+b\dot x+kx=F \;\Rightarrow\; \omega_n=\sqrt{k/m},\;\; \zeta=\frac{b}{2\sqrt{km}} \]</div>
+    </div>
+    <div class="workbench">
+      <div class="controls panel" id="m3-controls" aria-label="Module 3 parameters"></div>
+      <div class="plots">
+        <div class="plot-card">
+          <h3>Step response <span class="badge badge-neutral" id="m3-class">underdamped</span></h3>
+          <p class="cap">Unit step, K = 1. Amber points are read off the curve. Shaded band: ±2 % settling band.</p>
+          <div class="plot tall" id="m3-step" role="img" aria-label="Second-order step response"></div>
+        </div>
+        <div class="panel">
+          <h3>Response metrics</h3>
+          <div class="table-wrap"><table id="m3-metrics"></table></div>
+        </div>
+        <div class="panel" id="ss-panel">
+          <h3>State-space model (x<sub>1</sub> = displacement, x<sub>2</sub> = velocity)</h3>
+          <div class="two-col">
+            <div id="ss-eq"></div>
+            <div id="ss-mat"></div>
+          </div>
+          <div class="readouts" id="ss-readouts" style="margin-top:10px" aria-live="polite"></div>
+        </div>
+        <div class="plot-grid">
+          <div class="plot-card">
+            <h3>s-plane</h3>
+            <p class="cap">× poles of G(s), ○ eigenvalues of A: they coincide.</p>
+            <div class="plot" id="m3-splane" role="img" aria-label="Poles and eigenvalues in the s-plane"></div>
+          </div>
+          <div class="plot-card">
+            <h3>Phase plane (x<sub>1</sub>, x<sub>2</sub>)</h3>
+            <p class="cap">Step response of the state, simulated from A and B (RK4).</p>
+            <div class="plot" id="m3-phase" role="img" aria-label="Phase plane trajectory"></div>
+          </div>
+        </div>
+        <div id="m3-predict"></div>
+      </div>
+    </div>
+    <div class="interpret"><h3>Interpretation</h3><ul id="m3-interpret"></ul></div>
+  </section>
+
+  <!-- ============================ MODULE 4 ============================ -->
+  <section class="module" id="m4" aria-labelledby="m4-title">
+    <h2 id="m4-title">Module 4: Guess the sensor</h2>
+    <p>A sensor with hidden random parameters has been recorded with some noise. Estimate its parameters from the graph, then submit. An estimate within 10 % of the true value gets full marks.</p>
+    <div class="score-strip" id="m4-score" aria-live="polite"></div>
+    <div class="workbench">
+      <div class="controls">
+        <div class="panel">
+          <h3>Your estimate</h3>
+          <div id="m4-brief"></div>
+          <form id="m4-form" novalidate>
+            <div class="fields" id="m4-fields" style="margin:10px 0"></div>
+            <div class="btn-row">
+              <button type="submit" class="btn" id="m4-submit">Submit guess</button>
+              <button type="button" class="btn ghost" id="m4-new">New sensor</button>
+            </div>
+            <p class="err small" id="m4-err" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div class="panel">
+          <button type="button" class="btn small ghost" id="m4-hint">Show a hint</button>
+          <ol class="hints" id="m4-hints"></ol>
+        </div>
+      </div>
+      <div class="plots">
+        <div class="plot-card">
+          <h3 id="m4-plot-title">Recorded response</h3>
+          <div class="plot tall" id="m4-plot" role="img" aria-label="Recorded response of the hidden sensor"></div>
+        </div>
+        <div class="panel" id="m4-reveal" hidden>
+          <h3>Result</h3>
+          <div class="table-wrap"><table class="reveal-table" id="m4-table"></table></div>
+          <p id="m4-verdict" style="margin:10px 0 0"></p>
+        </div>
+        <div class="panel">
+          <details class="guide">
+            <summary>How to estimate the parameters</summary>
+            <ol>
+              <li><strong>First order, step:</strong> K = final value / A. τ is the time at which the curve reaches 63.2 % of its final value (95 % is at 3τ).</li>
+              <li><strong>First order, sine:</strong> measure the delay Δt between matching input and output peaks; φ = ωΔt and τ = tan(φ)/ω.</li>
+              <li><strong>Second order, step:</strong> overshoot M<sub>p</sub> = (peak − final)/final gives ζ = −ln M<sub>p</sub> / √(π² + ln² M<sub>p</sub>). Peak time t<sub>p</sub> gives ω<sub>n</sub> = π / (t<sub>p</sub>√(1 − ζ²)).</li>
+            </ol>
+            <p class="small muted">Scoring: 100 points per parameter within 10 % error, decreasing linearly to 0 at 50 % error. The round score is the average.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ VALIDATION ============================ -->
+  <section class="module" id="validation" aria-labelledby="v-title">
+    <h2 id="v-title">Validation checks</h2>
+    <p>The six reference results from the homework sheet, computed with the same functions that draw the plots.</p>
+    <div class="vsummary"><span class="badge badge-neutral" id="v-summary">Running…</span>
+      <button type="button" class="btn small ghost" id="v-rerun">Run again</button>
+      <span class="muted small" id="v-time"></span></div>
+    <div id="v-list"></div>
+  </section>
+
+  <!-- ============================ BONUS ============================ -->
+  <section class="module" id="bonus" aria-labelledby="b-title">
+    <h2 id="b-title">Bonus: Euler and RK4 against the exact solution</h2>
+    <p>The same step responses solved numerically with two ODE solvers. Increase the step h: Euler drifts (and diverges beyond its stability limit) while RK4 stays accurate.</p>
+    <div class="model">
+      <div>\[ \text{Euler: } x_{n+1}=x_n+h\,f(t_n,x_n) \] \[ \text{RK4: } x_{n+1}=x_n+\tfrac{h}{6}\left(k_1+2k_2+2k_3+k_4\right) \]</div>
+    </div>
+    <div class="workbench">
+      <div class="controls panel" id="b-controls" aria-label="Bonus parameters"></div>
+      <div class="plots">
+        <div class="plot-card">
+          <h3>Numerical vs exact</h3>
+          <div class="plot tall" id="b-resp" role="img" aria-label="Euler and RK4 against the exact solution"></div>
+        </div>
+        <div class="plot-card">
+          <h3>Absolute error (log axis)</h3>
+          <div class="plot" id="b-err" role="img" aria-label="Solver error plot"></div>
+        </div>
+        <div class="readouts" id="b-readouts" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">ENCS4380 Homework 1 · Ibraheem Mhanna (1232032) · Built with Plotly.js and KaTeX</footer>
+
+<!-- libraries from a CDN (pinned versions) -->
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@4.3.0/plotly-basic.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/contrib/auto-render.min.js"></script>
+<!-- module1.js must load first: it holds the shared maths, UI helpers and validation registry -->
+<script src="module1.js"></script>
+<script src="module2.js"></script>
+<script src="module3.js"></script>
+<script src="module4.js"></script>
+<script>
+/* navigation: each module is a section shown like a tab; it is set up the first time it is opened */
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const SECTIONS = ['overview', 'm1', 'm2', 'm3', 'm4', 'validation', 'bonus'];
+
+  function renderValidation() {
+    window.DynValidation.render($('v-list'), $('v-summary'));
+    $('v-time').textContent = 'Last run: ' + new Date().toLocaleTimeString();
+  }
+
+  function show(id) {
+    if (!SECTIONS.includes(id)) id = 'overview';
+    SECTIONS.forEach(s => $(s).classList.toggle('is-active', s === id));
+    document.querySelectorAll('.nav a').forEach(a => {
+      if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    const mod = window.Modules[id];
+    if (mod) {
+      try {
+        if (!mod.ready) mod.init();
+        mod.render();
+      } catch (err) {
+        console.error(err);
+        $(id).insertAdjacentHTML('afterbegin', `<p class="badge badge-fail">Error in this module: ${err.message}</p>`);
+      }
+    }
+    if (id === 'validation') renderValidation();
+    // sections behave like tabs: always open at the top of the page
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => window.UI.resizeAll($(id)));
+  }
+
+  $('v-rerun').addEventListener('click', renderValidation);
+  window.UI.renderMathIn(document.querySelector('main'));
+  window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+  // the browser jumps to the #id after loading; undo that jump
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.addEventListener('load', () => setTimeout(() => window.scrollTo(0, 0), 0));
+  show(location.hash.slice(1) || 'overview');
+})();
+</script>
+</body>
+</html>
